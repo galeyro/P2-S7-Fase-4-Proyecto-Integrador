@@ -139,29 +139,106 @@
     </div>
 
     <script>
-        // Funciones CRUD (pendientes de implementar en el backend)
-        
-        function editarAlumno(id) {
-            alert('Funcionalidad de edición pendiente de implementar. ID: ' + id);
-            // Aquí cargarías los datos del alumno en el formulario
+        // Obtener token CSRF para peticiones POST
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
         }
+        const csrftoken = getCookie('csrftoken');
 
-        function eliminarAlumno(id) {
-            if (confirm('¿Está seguro de eliminar este alumno?')) {
-                alert('Funcionalidad de eliminación pendiente de implementar. ID: ' + id);
-                // Aquí harías la petición DELETE al backend
+        // Función para editar alumno
+        async function editarAlumno(id) {
+            try {
+                const response = await fetch(`/editar/${id}/`);
+                const alumno = await response.json();
+                
+                // Llenar el formulario con los datos del alumno
+                document.getElementById('id_alumno').value = alumno.id_alumno;
+                document.getElementById('nombre').value = alumno.nombre;
+                document.getElementById('apellido').value = alumno.apellido;
+                document.getElementById('fecha_nacimiento').value = alumno.fecha_nacimiento;
+                document.getElementById('lugar_nacimiento').value = alumno.lugar_nacimiento;
+                document.getElementById('direccion').value = alumno.direccion;
+                document.getElementById('telefono_alumno').value = alumno.telefono_alumno;
+                document.getElementById('info_escolar').value = alumno.info_escolar;
+                document.getElementById('info_salud').value = alumno.info_salud;
+                
+                // Scroll al formulario
+                document.getElementById('alumnoForm').scrollIntoView({ behavior: 'smooth' });
+            } catch (error) {
+                alert('Error al cargar los datos del alumno: ' + error);
             }
         }
 
+        // Función para eliminar alumno
+        async function eliminarAlumno(id) {
+            if (confirm('¿Está seguro de eliminar este alumno?')) {
+                try {
+                    const formData = new FormData();
+                    const response = await fetch(`/eliminar/${id}/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': csrftoken
+                        },
+                        body: formData
+                    });
+                    
+                    const result = await response.json();
+                    if (result.success) {
+                        alert(result.message);
+                        location.reload();
+                    } else {
+                        alert('Error: ' + result.message);
+                    }
+                } catch (error) {
+                    alert('Error al eliminar el alumno: ' + error);
+                }
+            }
+        }
+
+        // Función para cancelar edición
         function cancelarEdicion() {
             document.getElementById('alumnoForm').reset();
             document.getElementById('id_alumno').value = '';
         }
 
-        document.getElementById('alumnoForm').addEventListener('submit', function(e) {
+        // Manejar el envío del formulario (crear o actualizar)
+        document.getElementById('alumnoForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            alert('Funcionalidad de guardado pendiente de implementar');
-            // Aquí harías la petición POST/PUT al backend
+            
+            const formData = new FormData(this);
+            const id = document.getElementById('id_alumno').value;
+            const url = id ? `/editar/${id}/` : '/crear/';
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: formData
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    alert(result.message);
+                    location.reload();
+                } else {
+                    alert('Error: ' + result.message);
+                }
+            } catch (error) {
+                alert('Error al guardar el alumno: ' + error);
+            }
         });
     </script>
 </body>
