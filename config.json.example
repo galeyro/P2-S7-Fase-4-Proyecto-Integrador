@@ -1,0 +1,14 @@
+{
+    "database": {
+        "ENGINE": "mssql",
+        "NAME": "NOMBRE_DE_TU_BASE_DE_DATOS",
+        "USER": "tu_usuario",
+        "PASSWORD": "tu_contraseña",
+        "HOST": "localhost",
+        "PORT": "1433",
+        "OPTIONS": {
+            "driver": "ODBC Driver 17 for SQL Server",
+            "unicode_results": true
+        }
+    }
+}
